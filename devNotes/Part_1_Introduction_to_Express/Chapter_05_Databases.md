@@ -64,6 +64,10 @@ userSchema.statics.representation = function(){
 mongoose.model( 'User', userSchema );
 ```
 
+这里我们通过定义 `static` 方法来让每个`model`自带方法。
+
+
+
 ###  关系
 
 ```js
@@ -122,6 +126,68 @@ $ mongo
 
 
 ## 在Router中使用数据库
+当用户发送GET请求到`/` 路由时候，我们会返回`index.html`页面，那么我们要在这个页面添加一个完整的表单：
+
+```js
+app.get('/', function(req, res){
+    res.render('index.html');
+});
+```
+
+```html
+<form method="POST" >
+    <div>
+        <label>Username:</label>
+        <input type="text" name="username"/>
+    </div>
+    <div>
+        <label>Password:</label>
+        <input type="password" name="password"/>
+    </div>
+    <div>
+        <input type="submit" value="Log In"/>
+    </div>
+</form>
+```
+
+那么用户在提交内容就会发送一个POST请求到`/`，我们需要通过数据库查询：
+
+```js
+app.post('/', function(req, res){
+    if(req.body.username){
+        User.findOne(
+            {'username':req.body.username},
+            '_id username',
+            function(err, user){
+                if(!err){
+                    if(!user){
+                        console.log('User not found');
+                    } else {
+                        req.session.user = user;
+                        req.session.loggedin = 1;
+                        console.log('Logged in user' + user);
+                    }
+                } else {
+                    console.log('Error(should redirect to error page )');
+                }
+            });
+    } else {
+        console.log('Error(User input empty )');
+    }
+})
+```
+
+> 注意这里我们使用了 `User.findOne`方法，在此之前，我们需要创建`User`的实例：
+
+```js
+var User = mogoonse.model('User');
+```
+
+
+
+
+
+
 `session` 我们会用到`express-session`中间件
 
 

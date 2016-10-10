@@ -150,50 +150,51 @@ app.post('/', function(req, res){
 ## 显示信息
 有时候在用户执行请求之后给予提示显得很有必要，例如确认、警告、错误信息等，最常见的案例就是在一个网站上输入了错误的用户名或密码，服务器会重新返回登录表单，以及信息告诉你用户名或者密码错误。
 
-Express有中间件可以完成这个需求：[flash](https://github.com/expressjs/flash)
+Express有不少中间件可以完成这个需求：
+* [connect-flash](https://www.npmjs.com/package/connect-flash)
+* [flash](https://github.com/expressjs/flash)
 
-首先，需要安装：
+鉴于之后的用户验证我们要用到`passport.js`插件，我们这里选用`connect-flash`插件。
+
+### 使用connect-flash插件
+#### 安装
 ```bash
-npm i flash
+npm i connect-flash --save 
 ```
-
-使用
+#### 代码中使用
 
 ```js
-app.use(require('flash')());
+var flash = require('connect-flash');
+var app = express();
 
-```
+app.use(flash());
 
-之后，我们就可以在Request中访问flash对象了：
-
-```js
-app.get('/', function(req,res){
-	res.render('index.html', {username: req.session.username});
-	req.session.flash.splice(0,1);
-});
-
-app.post('/', function(req, res){
-	var old_name = req.session.username;
-	var username = req.body.username;
-
-	if (old_name !== username){
-		req.flash('info', 'Welcome '+ username);
-	}
-
-	req.session.username = username;
+app.get('/user', function(req, res){
+	req.flash('info', 'Flash is back!');
 	res.redirect('/');
 });
+
+app.get('/', function(req,res){
+	res.render('index.html', {message: req.flash('info')})
+})
 ```
-
-接着我们需要在模板里能够显示该信息：
-
-{% for message in flash %}
-    {{ message.message }}
-{% endfor %}
-
-话说，这个并不好使……因为它再的信息被读取后并未清空，信息会一直贮存在session中（req.session.flash）, 所以才使用：
+代码解释： 正如上面提到的，一般在post操作之后，我们都需要重定向到指定的get页面，我们执行的逻辑也就是，先在post的逻辑处理中添加需要显示的信息：
 
 ```js
-req.session.flash.splice(0,1);
+// key: info
+req.flash('info', 'your message');
 ```
-来手动清空，当这样做并方便，需要优化，例如在`for message in flash`中将`flash`换成一个方法，每次执行都会剔除已经读出的消息。
+然后在重定向的页面中获取，并指定模板中的变量：
+
+```js
+// 根据key取出info
+res.render('index.html', {message: req.flash('info')});
+```
+
+最后我们在模板页面中通过如下代码渲染我们的消息就可以了。
+
+```html
+{% if message %}
+<p>{{ message }}</p>
+{% endif %}
+```

@@ -1,3 +1,50 @@
+### 使用flash插件
+首先，需要安装：
+```bash
+npm i flash
+```
+
+使用
+
+```js
+app.use(require('flash')());
+
+```
+
+之后，我们就可以在Request中访问flash对象了：
+
+```js
+app.get('/', function(req,res){
+	res.render('index.html', {username: req.session.username});
+	req.session.flash.splice(0,1);
+});
+
+app.post('/', function(req, res){
+	var old_name = req.session.username;
+	var username = req.body.username;
+
+	if (old_name !== username){
+		req.flash('info', 'Welcome '+ username);
+	}
+
+	req.session.username = username;
+	res.redirect('/');
+});
+```
+
+接着我们需要在模板里能够显示该信息：
+
+{% for message in flash %}
+    {{ message.message }}
+{% endfor %}
+
+话说，这个并不好使……因为它再的信息被读取后并未清空，信息会一直贮存在session中（req.session.flash）, 所以才使用：
+
+```js
+req.session.flash.splice(0,1);
+```
+来手动清空，当这样做并方便，需要优化，例如在`for message in flash`中将`flash`换成一个方法，每次执行都会剔除已经读出的消息。
+
 ## Essentials
 npm i express -g
 
