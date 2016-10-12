@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>
+    {% if title %}
+      喜雀公寓-{{ title }}
+    {% else %}
+      喜雀公寓
+    {% endif %}  
+  </title>
+  <link rel="stylesheet" href="/stylesheets/main.css">
+</head>
+<body>
+    {% block tempcode %}
+    This is the default content
+    {% endblock %}
+</body>
+</html>

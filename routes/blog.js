@@ -8,13 +8,6 @@ exports.all = function(req, res, next){
 };
 
 /**
- * Get specific infomation
- */
-exports.specificAll = function(req, res, next){
-
-}
-
-/**
  * Create new room form
  */
 exports.create = function(req, res, next){
