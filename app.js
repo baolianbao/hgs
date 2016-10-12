@@ -9,58 +9,26 @@ var flash = require('connect-flash');
 
 var app = express();
 
-//-------------------------------
-// Database configure
-//-------------------------------
-app.locals.dbURI = 'mongodb://localhost/huaguoshan'
+// Load database.
+var db = require('./models/db');
+var config = require('./config');
+var errorHandler = require('./errorHandler');
 
-mongoose.connect(app.locals.dbURI);
-
-
-var roleSchema = new mongoose.Schema({
-    name: {type: String, unique:true}
-});
-
-roleSchema.statics.representation = function(){
-  return 'Role: ' + this.name;
-};
-
-// Build the Role model
-mongoose.model('Role', roleSchema);
-
-
-var userSchema = new mongoose.Schema({
-    role_id:{type: mongoose.Schema.Types.ObjectId, ref: 'Role'},
-    username: {type: String, unique: true, index: true } // login name if they have
-});
-
-userSchema.statics.representation = function(){
-  return 'User: ' + this.username;
-}
-
-// Build the User model
-mongoose.model( 'User', userSchema );
-
-var User = mongoose.model('User');
-// ---------------------------------------------
-
-app.locals.email.config = {
-  from: 'youremail@163.com',
-  host: 'smtp.163.com', // hostname
-  secureConnection: true, // use SSL
-  port: 465, // port for secure SMTP
-  transportMethod: 'SMTP', // default is SMTP. Accepts anything that nodemailer accepts
-  auth: {
-    user: 'youremail@163.com',
-    pass: 'yourpassword'
-  }
-};
+// routes
+var auth = require('./routes/auth');
+var user = require('./routes/user');
+var apartment = require('./routes/apartment');
+var trusteeship = require('./routes/trusteeship');
+var apartmentBill = require('./routes/apartment_bill');
+var room = require('./routes/room');
+var rent = require('./routes/rent')
+var roomBill = require('./routes/room_bill');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(session({
-  secret: 'recommand 128 bytes random string',
+  secret: config.SESSION_SECRET,
   cookie: { maxAge: 60 * 1000 }
 }));
 
@@ -74,61 +42,151 @@ nunjucks.configure('views', {
 
 app.use(flash());
 
-app.get('/', function(req,res){
-  res.render('index.html', {username: req.session.username, message: req.flash('info')});
-});
+/**
+ * Authentication
+ */
+app.get('/auth/login', auth.login);
+app.post('/auth/login', auth.doLogin);
+app.get('/auth/logout', auth.logout);
 
-app.post('/', function(req, res){
-
-    if(req.body.username){
-        User.findOne(
-            {'username':req.body.username},
-            // '_id username',
-            function(err, user){
-                if(!err){
-                    if(!user){
-                        console.log('User not found');
-                    } else {
-                        req.session.username = req.body.username;
-                        req.session.loggedin = 1;
-                        console.log('Logged in user' + user);
-                    }
-                } else {
-                    console.log('Error(should redirect to error page )');
-                }
-            });
-    } else {
-      console.log('wft');
-      req.flash('info', 'User input empty');
-    }
-
-    res.redirect('/');
-})
+/**
+ * User Management
+ */
+app.get('/user', user.all);
+app.get('/user/:id', user.displayInfo);
+app.get('/user/new', user.create);
+app.post('/user/new', user.doCreate);
+app.get('/user/edit/:id', user.edit);
+app.post('/user/edit/:id', user.doEdit);
+app.get('/user/delete/:id', user.confirmDelete);
+app.post('/user/delete/:id', user.doDelete);
 
 
-app.get('/user/:name', function(req,res){
-	var name = req.params.name;
-	res.render('user.html',{name: name});
-});
+/**
+ * Apartments Management
+ */
+app.get('/apartment', apartment.all);
+app.get('/apartment/:id', apartment.displayInfo);
+app.get('/apartment/new', apartment.create);
+app.post('/apartment/new', apartment.doCreate);
+app.get('/apartment/edit/:id', apartment.edit);
+app.post('/apartment/edit/:id', apartment.doEdit);
+app.get('/apartment/delete/:id', apartment.confirmDelete);
+app.post('/apartment/delete/:id', apartment.doDelete);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-//     console.log('Did I am come here?');
-//   var err = new Error('Not Found');
-//   err.status = 404;
-res.status(404).send('<h1>oops!</h1>');
-//   next(err);
-});
-
-app.use(function(err, req, res, next) {
-  res.status(err.status || 500);
-  res.render('error', {
-    message: err.message,
-    error: {}
-  });
-});
+/**
+ * Apartment Trusteeship Record Management
+ */
+app.get('/trusteeship', trusteeship.all);
+//------------------------------------------
+app.get('/apartment/:apartment_id/trusteeship', trusteeship.specificAll);
+app.get('/apartment/:apartment_id/trusteeship/:id', trusteeship.displayInfo);
+//------------------------------------------
+app.get('/apartment/:apartment_id/trusteeship/new', trusteeship.create ); 
+app.post('/apartment/:apartment_id/trusteeship/new', trusteeship.doCreate);
+app.get('/apartment/:apartment_id/trusteeship/edit/:id', trusteeship.edit);
+app.post('/apartment/:apartment_id/trusteeship/edit/:id', trusteeship.doEdit);
+app.get('/apartment/:apartment_id/trusteeship/delete/:id', trusteeship.confirmDelete);
+app.post('/apartment/:apartment_id/trusteeship/delete:id', trusteeship.doDelete);
 
 
+/**
+ * Apartment Bills Management
+ */
+app.get('/apartment/bill',apartmentBill.all);
+//------------------------------------------
+app.get('/apartment/:apartment_id/bill', apartmentBill.specificAll); // Get specific apartment bills 
+app.get('/apartment/:apartment_id/bill/:id', apartmentBill.displayInfo); // Get specific apartment specific bill
+//------------------------------------------
+app.get('/apartment/:apartment_id/bill/new', apartmentBill.create ); 
+app.post('/apartment/:apartment_id/bill/new', apartmentBill.doCreate);
+app.get('/apartment/:apartment_id/bill/edit/:id', apartmentBill.edit);
+app.post('/apartment/:apartment_id/bill/edit/:id', apartmentBill.doEdit);
+app.get('/apartment/:apartment_id/bill/delete/:id', apartmentBill.confirmDelete);
+app.post('/apartment/:apartment_id/bill/delete:id', apartmentBill.doDelete);
+
+
+/**
+ * Apartment Rooms Management
+ */
+app.get('/room', room.all);
+//-------------------------------------------
+app.get('/apartment/:apartment_id/room', room.specificAll);
+app.get('/apartment/:apartment_id/room/:id', room.displayInfo);
+//-------------------------------------------
+app.get('/apartment/:apartment_id/room/new', room.create);
+app.post('/apartment/:apartment_id/room/new', room.doCreate);
+app.get('/apartment/:apartment_id/room/edit/:id', room.edit );
+app.post('/apartment/:apartment_id/room/edit/:id', room.doEdit);
+app.get('/apartment/:apartment_id/room/delete/:id', room.confirmDelete);
+app.post('/apartment/:apartment_id/room/delete/:id', room.doDelete);
+
+/**
+ * Apartment Rent Record Management
+ */
+app.get('/rent', rent.all);
+//--------------------------------------------
+app.get('/apartment/:apartment_id/room/:room_id/rent', rent.specificAll);
+app.get('/apartment/:apartment_id/room/:room_id/rent/:id', rent.displayInfo);
+//--------------------------------------------
+app.get('/apartment/:apartment_id/room/:room_id/rent/new', rent.create ); 
+app.post('/apartment/:apartment_id/room/:room_id/rent/new', rent.doCreate);
+app.get('/apartment/:apartment_id/room/:room_id/rent/edit/:id', rent.edit);
+app.post('/apartment/:apartment_id/room/:room_id/rent/edit/:id', rent.doEdit);
+app.get('/apartment/:apartment_id/room/:room_id/rent/delete/:id', rent.confirmDelete);
+app.post('/apartment/:apartment_id/room/:room_id/rent/delete:id', rent.doDelete);
+
+/**
+ * Apartment Room Bill(s) Management
+ */
+app.get('/room/bill', roomBill.all);
+//--------------------------------------------
+app.get('/apartment/:apartment_id/room/:room_id/bill', roomBill.all);
+app.get('/apartment/:apartment_id/room/:room_id/bill/:id', roomBill.displayInfo);
+//--------------------------------------------
+app.get('/apartment/:apartment_id/room/:room_id/bill/new', roomBill.create ); 
+app.post('/apartment/:apartment_id/room/:room_id/bill/new', roomBill.doCreate);
+app.get('/apartment/:apartment_id/room/:room_id/bill/edit/:id', roomBill.edit);
+app.post('/apartment/:apartment_id/room/:room_id/bill/edit/:id', roomBill.doEdit);
+app.get('/apartment/:apartment_id/room/:room_id/bill/delete/:id', roomBill.confirmDelete);
+app.post('/apartment/:apartment_id/room/:room_id/bill/delete:id', roomBill.doDelete);
+
+
+/**
+ * Blog Management
+ */
+app.get('/blog', blog.all);
+app.get('/blog/:id', blog.displayInfo);
+app.get('/blog/new', blog.create);
+app.post('/blog/new', blog.doCreate);
+app.get('/blog/edit/:id', blog.edit);
+app.post('/blog/edit/:id', blog.doEdit);
+app.get('/blog/delete/:id', blog.confirmDelete);
+app.post('/blog/delete/:id', blog.doDelete);
+
+
+/**
+ * Blog Comment Management
+ */
+app.get('/comment', comment.all);
+//-------------------------------------------
+app.get('/blog/:id/comment', comment.specificAll);
+app.get('/blog/:id/comment/:id', comment.displayInfo);
+//-------------------------------------------
+app.get('/blog/:id/comment/new', comment.create);
+app.post('/blog/:id/comment/new', comment.doCreate);
+app.get('/blog/:id/comment/edit/:id', comment.edit );
+app.post('/blog/:id/comment/edit/:id', comment.doEdit);
+app.get('/blog/:id/comment/delete/:id', comment.confirmDelete);
+app.post('/blog/:id/comment/delete/:id', comment.doDelete);
+
+
+
+/**
+ * Errors Handelr
+ */
+app.use(errorHandler.pageNotFound);
+app.use(errorHandler.internalServerError);
 
 
 app.listen(3000);
