@@ -47,6 +47,9 @@ nunjucks.configure('views', {
 app.use(flash());
 
 app.get('/', index.index);
+app.get('/contact', index.contact);
+app.get('/faq', index.faq);
+app.get('/about', index.about);
 
 /**
  * Authentication

@@ -4,7 +4,7 @@
  * List all rooms
  */
 exports.all = function(req, res, next){
-
+    res.render('blog/blogs.html')
 };
 
 /**
@@ -25,7 +25,7 @@ exports.doCreate = function(req, res, next){
  * Display a specific room infomation
  */
 exports.displayInfo = function(req, res, next){
-
+    res.render('blog/blog.html');
 };
 
 /**
