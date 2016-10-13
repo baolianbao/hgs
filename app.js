@@ -37,6 +37,7 @@ app.use(session({
 
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'bower_components')));
 
 nunjucks.configure('views', {
 	autoescape: true,

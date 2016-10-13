@@ -11,7 +11,7 @@ exports.all = function(req, res, next){
  * Get specific infomation
  */
 exports.specificAll = function(req, res, next){
-
+    res.render('apartment/trusteeship/trusteeships.html');
 }
 
 /**

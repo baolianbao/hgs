@@ -186,6 +186,7 @@ var rentRecordSchema = new mongoose.Schema({
 rentRecordSchema.plugin(creationInfo);
 
 var roomSchema = new mongoose.Schema({
+    name: {type: String, index:true, required: true },
     area: Number,
     towardsType: {type: Number, enum: towardsTypes},
     features:{type: String}, // 阳台，飘窗
@@ -194,7 +195,6 @@ var roomSchema = new mongoose.Schema({
     rentRecords: [rentRecordSchema],
     bills:[billSchema]
 });
-roomSchema.plugin(creationInfo);
 
 /* ********************************************
         TRUSTEESHIP SCHEMA
@@ -250,15 +250,15 @@ var apartmentSchema = new mongoose.Schema({
     unit: {type: String},
     floor: Number,
     apartmentId: String,
-    coordinates: String,
+    coordinates: [Number],
     area: Number,
     ownershipType: {type:String, enum: ownershipTypes },
     transport:{type:String},
     environment:{type:String},
-    facilities:{type: String},
+    facilities:[String],
     waterMeterId:{type: String},
-    electricMeter:{type: String},
-    gasMeter:{type: String},
+    electricMeterId:{type: String},
+    gasMeterId:{type: String},
 
     trusteeshipRecords: [trusteeshipSchema], // Apartment trusteeship records.
     bills: [billSchema],    // Apartment trusteeship bills
