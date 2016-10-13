@@ -7,11 +7,17 @@ var mongoose = require('mongoose');
 var db = require('../models/db');
 var User = mongoose.model('User');
 
+exports.register = function(req, res, next){
+    res.render('auth/register.html', { title: '注册'});
+}
+
+exports.doRegister = function(req, res, next){
+    res.redirect('/');
+}
 
 exports.login = function(req, res, next){
     res.render('auth/login.html', {username: req.session.username, message: req.flash('info')});
 };
-
 
 exports.doLogin = function(req, res, next){
     if(req.body.username){

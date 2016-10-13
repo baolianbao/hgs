@@ -40,7 +40,9 @@
     <!-- Page Content -->
     <div class="container">
         {% block container %}
-        <p> The Container</p>
+        <!-- Page Heading/Breadcrumbs : something like /Home/contact -->
+        {% include "./breadcrumbs.html" %}
+
         {% endblock %}
     </div>
 

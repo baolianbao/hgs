@@ -47,13 +47,17 @@ nunjucks.configure('views', {
 app.use(flash());
 
 app.get('/', index.index);
+app.get('/apartments', index.apartments);
 app.get('/contact', index.contact);
+app.get('/blogs', index.blogs);
 app.get('/faq', index.faq);
 app.get('/about', index.about);
 
 /**
  * Authentication
  */
+app.get('/auth/register', auth.register);
+app.post('/auth/register', auth.doRegister);
 app.get('/auth/login', auth.login);
 app.post('/auth/login', auth.doLogin);
 app.get('/auth/logout', auth.logout);
