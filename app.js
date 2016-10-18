@@ -7,6 +7,8 @@ var bodyParser = require('body-parser');
 var session = require('express-session');
 var flash = require('connect-flash');
 
+var passport = require('passport');
+
 var app = express();
 
 // Load database.
@@ -26,6 +28,7 @@ var rent = require('./routes/rent')
 var roomBill = require('./routes/room_bill');
 var blog = require('./routes/blog');
 var comment = require('./routes/comment');
+var admin = require('./routes/admin');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -35,6 +38,8 @@ app.use(session({
   cookie: { maxAge: 60 * 1000 }
 }));
 
+app.use(passport.initialize());
+app.use(passport.session());
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'bower_components')));
@@ -45,6 +50,12 @@ nunjucks.configure('views', {
 });
 
 app.use(flash());
+
+// make sure req.user store in every response.
+app.use(function(req, res, next){
+  res.locals.user = req.user;
+  next();
+})
 
 app.get('/', index.index);
 app.get('/apartments', index.apartments);
@@ -58,24 +69,37 @@ app.get('/about', index.about);
  */
 app.get('/auth/register', auth.register);
 app.post('/auth/register', auth.doRegister);
-app.get('/auth/login', auth.login);
-app.post('/auth/login', auth.doLogin);
+// login
+app.get('/auth/login', auth.loginLocal);
+app.post('/auth/login', auth.doLoginLocal);
+
+app.get('/auth/github', auth.loginGithub );
+app.get('/auth/github/callback', auth.doLoginGithub);
+
+// logout
 app.get('/auth/logout', auth.logout);
 
-/**
- * User Management
- */
-app.get('/user', user.all);
+app.get('/auth/user/:username', auth.ensureAuthenticated, user.displayInfo);
 
-app.get('/user/new', user.create);
-app.post('/user/new', user.doCreate);
-// Must put after '/path/new', otherwise it will match the '/path:id' first 
-app.get('/user/:id', user.displayInfo);
-app.get('/user/edit/:id', user.edit);
-app.post('/user/edit/:id', user.doEdit);
-app.get('/user/delete/:id', user.confirmDelete);
-app.post('/user/delete/:id', user.doDelete);
 
+
+// /**
+//  * User Management
+//  */
+// app.get('/user', user.all);
+
+// app.get('/user/new', user.create);
+// app.post('/user/new', user.doCreate);
+// // Must put after '/path/new', otherwise it will match the '/path:id' first 
+// app.get('/user/:id', user.displayInfo);
+// app.get('/user/edit/:id', user.edit);
+// app.post('/user/edit/:id', user.doEdit);
+// app.get('/user/delete/:id', user.confirmDelete);
+// app.post('/user/delete/:id', user.doDelete);
+
+
+app.get('/admin', auth.ensureAuthenticated, admin.dashbord);
+app.get('/admin/dashbord', auth.ensureAuthenticated, admin.dashbord );
 
 /**
  * Apartments Management

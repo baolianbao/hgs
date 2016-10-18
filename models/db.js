@@ -96,15 +96,14 @@ exports.Role = mongoose.model('Role');
  ********************************************/
 var userSchema = new mongoose.Schema({
     role_id:{type: mongoose.Schema.Types.ObjectId, ref: 'Role'},
-    email: {type: String, unique: true, index: true },
     username: {type: String, unique: true, index: true },
     password_hash: {type: String },
-    telephone: {type: String, unique: true},
+    cellphone: {type: String, required: true, unique: true},
 
     // ---------------
     realname: {type: String},
     idType:{ type:String, enum:idTypes }, // 证件类型
-    idValue:{ type:String, unique:true }, // 证件号码
+    idValue:{ type:String }, // 证件号码
     idPicture: { type: Buffer}, // 证件照片
     job: { type: String },
     bankType: { type:String, enum: bankTypes },
@@ -121,10 +120,19 @@ userSchema.statics.passwordHash = function(password, callback){
 };
 
 userSchema.statics.passwordCompare = function(password, hash, callback){
-    bcrypt.compare(password, hash, function(err, res){
-        callback(err, res);
+    bcrypt.compare(password, hash, function(err, result){
+        callback(err, result);
     });
 };
+
+userSchema.statics.passwordHashSync = function(password){
+    var salt = bcrypt.genSaltSync(config.PASSWORD_SALT_ROUNDS);
+    return bcrypt.hashSync(password, salt);
+}
+
+userSchema.statics.passwordCompareSync = function(password, hash){
+    return bcrypt.compareSync(password, hash);
+}
 
 userSchema.statics.addUser = function(user, callback){
 

@@ -1,0 +1,83 @@
+<!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">喜雀公寓</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li class="active">
+                    <a href="/apartments">我要租房</a>
+                </li>
+                <li>
+                    <a href="/contact">业主加盟</a>
+                </li>
+                <li>
+                    <a href="/blogs">喜雀生活</a>
+                </li>
+                <li>
+                    <a href="/faq">租前须知</a>
+                </li>
+                <li>
+                    <a href="/about">关于我们</a>
+                </li>
+
+                {% if user %}
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ user.username }}<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="/auth/user/{{ user.username }}">我的信息</a>
+                        </li>
+                        <li>
+                            <a href="/auth/logout">退出</a>
+                        </li>
+                    </ul>
+                </li>
+                {% else %}
+                    <li>
+                        <a href="/auth/login">登录</a>
+                    </li>
+
+                    <li>
+                        <a href="/auth/register">注册</a>
+                    </li>
+                {% endif %}
+
+                
+
+
+                <!--<li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Other Pages <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="full-width.html">Full Width Page</a>
+                        </li>
+                        <li>
+                            <a href="sidebar.html">Sidebar Page</a>
+                        </li>
+                        <li>
+                            <a href="faq.html">FAQ</a>
+                        </li>
+                        <li>
+                            <a href="404.html">404</a>
+                        </li>
+                        <li>
+                            <a href="pricing.html">Pricing Table</a>
+                        </li>
+                    </ul>
+                </li>-->
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>

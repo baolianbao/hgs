@@ -1,0 +1,23 @@
+{% extends "../templates/layout.html" %}
+
+{% block container %}
+  {% if message %}
+    <p>{{ message }}</p>
+  {% endif %}
+    <form class="form-signin" method="POST">
+      <h2 class="form-signin-heading">登录</h2>
+      <label for="inputUsername" class="sr-only">用户名</label>
+      <input type="text" id="inputUsername" name="username" class="form-control" placeholder="User name" required autofocus>
+      <label for="inputPassword" class="sr-only">密码</label>
+      <input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" value="remember-me"> 记住我
+        </label>
+      </div>
+      <button class="btn btn-lg btn-primary btn-block" type="submit">登录</button>
+    </form>
+
+    <a href="/auth/github">Fast Login via Github</a>
+    <a href="/auth/wechat">Fast Login Via Wechat</a>
+{% endblock %}
